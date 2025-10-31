@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MIT AI2 Mobile Dashboard – Pro</title>
+  <!-- 320 x 650 fixed viewport for AI2 WebViewer -->
+  <style>
+    :root{
+      --bg:#f7f9fc;               /* surface background */
+      --header-grad1:#334155;      /* theme primary */
+      --header-grad2:#0ea5e9;      /* theme secondary */
+      --card:#ffffff;              /* cards */
+      --text:#0f172a;              /* main text */
+      --muted:#64748b;             /* muted text */
+      --accent:#0ea5e9;            /* accent */
+      --danger:#ef4444;            /* danger */
+      --link:#2563eb;              /* links */
+      --radius:14px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+      --font-size:16px;            /* base */
+    }
+
+    /* Themes (Settings can toggle these by writing style vars) */
+    .theme-dark{
+      --bg:#0b1220;
+      --card:#121a2a;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --header-grad1:#0ea5e9;
+      --header-grad2:#6366f1;
+      --link:#60a5fa;
+    }
+    .theme-purple{
+      --bg:#fbf7ff;
+      --card:#ffffff;
+      --text:#1f1147;
+      --muted:#6d5ca3;
+      --header-grad1:#8b5cf6;
+      --header-grad2:#d946ef;
+      --link:#7c3aed;
+    }
+
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;height:100%;overflow:hidden;}
+    body{display:flex;justify-content:center;background:var(--bg);font-family:var(--font);font-size:var(--font-size);} 
+
+    .phone{position:fixed;inset:0;margin:auto;width:320px;height:650px;background:var(--bg);overflow:hidden;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.15);display:flex;flex-direction:column}
+
+    .header{position:relative;padding:18px 16px 16px;color:#fff}
+    .header::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,var(--header-grad1),var(--header-grad2));z-index:0}
+    .header .wrap{position:relative;z-index:1}
+    .title{font-weight:800;letter-spacing:.4px}
+    .username{font-size:20px;font-weight:700;margin-top:2px}
+
+    .content{flex:1;overflow:auto;padding:12px 14px 16px}
+
+    .section-title{font-size:15px;font-weight:700;color:var(--text);margin:8px 2px 10px}
+
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .card-btn{display:block;text-decoration:none;color:var(--text);background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);border:none;text-align:center}
+    .card-btn:active{transform:translateY(1px)}
+    .icon{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin:0 auto 6px;color:#fff}
+    .ic1{background:linear-gradient(135deg,#334155,#0ea5e9)}
+    .ic2{background:linear-gradient(135deg,#f093fb,#f5576c)}
+    .ic3{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+    .ic4{background:linear-gradient(135deg,#43e97b,#38f9d7)}
+    .ic5{background:linear-gradient(135deg,#fb7185,#f43f5e)}
+    .ic6{background:linear-gradient(135deg,#22c55e,#10b981)}
+
+    .view{display:none}
+    .view.active{display:block}
+
+    .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);color:var(--text)}
+    .muted{color:var(--muted)}
+    .btn{display:inline-block;border:none;border-radius:10px;padding:10px 12px;background:var(--header-grad1);color:#fff;font-weight:700}
+    .btn.alt{background:var(--header-grad2)}
+    .btn.ghost{background:transparent;border:1px solid currentColor;color:var(--link)}
+    .btn.small{padding:6px 10px;border-radius:8px;font-size:12px}
+    .row{display:flex;justify-content:space-between;align-items:center}
+    .row-gap{display:flex;gap:8px;flex-wrap:wrap}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #e5e7eb;background:transparent;color:var(--text)}
+    textarea{min-height:70px}
+    .list{margin-top:8px;max-height:210px;overflow:auto}
+    .item{padding:8px;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:8px}
+
+    .progress{height:10px;border-radius:999px;background:#e5e7eb;overflow:hidden}
+    .bar{height:100%;width:0;background:var(--accent)}
+
+    .footer{display:flex;gap:8px;justify-content:space-between;margin-top:8px}
+    .link{color:var(--link);text-decoration:none}
+    .pill{font-size:11px;padding:2px 8px;border-radius:999px;background:#e2e8f0;color:#0f172a}
+    .strike{text-decoration:line-through;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="phone" id="appRoot">
+    <!-- HEADER (profile pic & notifications removed per request) -->
+    <div class="header">
+      <div class="wrap">
+        <div class="title">Dashboard</div>
+        <div class="username" id="userName">Welcome User</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="section-title">Quick Actions</div>
+      <div class="grid">
+        <button class="card-btn" data-view="chat">
+          <div class="icon ic1">💬</div>
+          <div>Chat Bot</div>
+        </button>
+        <button class="card-btn" data-view="sleep">
+          <div class="icon ic2">🌙</div>
+          <div>Sleep Log</div>
+        </button>
+        <button class="card-btn" data-view="hydration">
+          <div class="icon ic6">💧</div>
+          <div>Hydration</div>
+        </button>
+        <button class="card-btn" data-view="todo">
+          <div class="icon ic3">📝</div>
+          <div>To‑Do & Reminders</div>
+        </button>
+        <button class="card-btn" data-view="calendar">
+          <div class="icon ic4">📆</div>
+          <div>Calendar</div>
+        </button>
+        <button class="card-btn" data-view="settings">
+          <div class="icon ic5">⚙️</div>
+          <div>App Settings</div>
+        </button>
+      </div>
+
+      <!-- CHAT VIEW -->
+      <div id="view-chat" class="view active" style="margin-top:12px">
+        <div class="card">
+          <strong>Chat Bot</strong>
+          <p class="muted" style="margin:6px 0 10px">Tap a button to get a random joke or study tip.</p>
+          <div class="row-gap">
+            <button class="btn small" data-act="joke">Tell me a Joke</button>
+            <button class="btn small alt" data-act="tip">Give a Study Tip</button>
+          </div>
+          <div id="chatOutput" class="item" style="margin-top:10px">👋 Hi! I'm ready.</div>
+        </div>
+      </div>
+
+      <!-- SLEEP LOG VIEW -->
+      <div id="view-sleep" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>Sleep Log</strong>
+          <p class="muted" style="margin:6px 0 10px">Track bedtime, wake time, quality and notes.</p>
+          <div class="row-gap">
+            <div style="flex:1">
+              <label class="muted">Bedtime</label>
+              <input type="datetime-local" id="sleepBed" />
+            </div>
+            <div style="flex:1">
+              <label class="muted">Wake time</label>
+              <input type="datetime-local" id="sleepWake" />
+            </div>
+          </div>
+          <div class="row-gap" style="margin-top:8px">
+            <div style="flex:1">
+              <label class="muted">Quality (1-5)</label>
+              <select id="sleepQuality">
+                <option>5</option><option>4</option><option>3</option><option>2</option><option>1</option>
+              </select>
+            </div>
+            <div style="flex:2">
+              <label class="muted">Notes</label>
+              <input id="sleepNotes" placeholder="e.g., late coffee"/>
+            </div>
+          </div>
+          <div class="footer">
+            <button class="btn" onclick="saveSleep()">Save Entry</button>
+            <button class="btn ghost" onclick="clearSleep()">Clear All</button>
+          </div>
+          <div class="list" id="sleepList"></div>
+          <div class="item" id="sleepStats" style="background:#f1f5f9">Total hrs (last 7 entries): <b>0.0</b></div>
+        </div>
+      </div>
+
+      <!-- HYDRATION VIEW (goal & logging) -->
+      <div id="view-hydration" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>Hydration Monitor</strong>
+          <p class="muted" style="margin:6px 0 10px">Set a daily goal and log water.</p>
+          <div class="row-gap">
+            <div style="flex:1">
+              <label class="muted">Daily Goal (ml)</label>
+              <input id="waterGoal" type="number" min="0" step="50" />
+            </div>
+            <div style="align-self:flex-end">
+              <button class="btn small" onclick="setGoal()">Set Goal</button>
+            </div>
+          </div>
+
+          <div class="progress" style="margin:10px 0"><div class="bar" id="waterBar"></div></div>
+          <div class="row" style="color:var(--text);margin-bottom:8px">
+            <div>Today: <b id="waterNow">0</b> / <span id="waterGoalText">0</span> ml</div>
+            <a class="link" href="#" onclick="resetWater();return false;">reset</a>
+          </div>
+
+          <div class="row-gap">
+            <button class="btn small" onclick="addWater(150)">+150 ml</button>
+            <button class="btn small" onclick="addWater(250)">+250 ml</button>
+            <button class="btn small" onclick="addWater(500)">+500 ml</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TO‑DO & REMINDERS VIEW -->
+      <div id="view-todo" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>To‑Do & Reminders</strong>
+          <p class="muted" style="margin:6px 0 10px">Create tasks with optional due date, notes, star (priority), and repeating reminders.</p>
+
+          <div class="row-gap">
+            <input id="todoTitle" placeholder="Task title (required)" />
+            <input id="todoDue" type="datetime-local" />
+            <input id="todoEvery" type="number" min="5" step="5" placeholder="Remind every (min)" />
+            <input id="todoNotes" placeholder="Notes (optional)" />
+            <label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="todoStar"/> Star</label>
+            <button class="btn" onclick="addTask()">Add Task</button>
+          </div>
+
+          <div class="list" id="todoList"></div>
+          <div class="row" style="margin-top:6px">
+            <span class="muted" id="todoSummary">0 tasks</span>
+            <div class="row-gap">
+              <button class="btn small ghost" onclick="clearDone()">Clear Completed</button>
+              <button class="btn small ghost" onclick="clearAllTasks()">Clear All</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR (placeholder for AI2 screen) -->
+      <div id="view-calendar" class="view" style="margin-top:12px">
+        <div class="card"><strong>Calendar</strong>
+          <p class="muted">Open your dedicated AI2 Calendar screen.
+            <a class="link" href="#" onclick="emitAI2('calendar:open');return false;">Open in AI2</a>
+          </p></div>
+      </div>
+
+      <!-- SETTINGS VIEW -->
+      <div id="view-settings" class="view" style="margin-top:12px">
+        <div class="card">
+          <strong>App Settings</strong>
+          <p class="muted" style="margin:6px 0 10px">Theme, font size and font family are saved locally.</p>
+          <div>
+            <label class="muted">Theme</label>
+            <select id="themeSel" onchange="applyTheme(this.value)">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="purple">Purple</option>
+            </select>
+          </div>
+          <div style="margin-top:8px">
+            <label class="muted">Font Size</label>
+            <select id="fontSizeSel" onchange="applyFontSize(this.value)">
+              <option value="14">Small</option>
+              <option value="16" selected>Medium</option>
+              <option value="18">Large</option>
+              <option value="20">X-Large</option>
+            </select>
+          </div>
+          <div style="margin-top:8px">
+            <label class="muted">Font Style (10 options)</label>
+            <select id="fontSel" onchange="applyFont(this.value)">
+              <option value="system">System Default</option>
+              <option value="serif">Serif (Georgia)</option>
+              <option value="mono">Monospace</option>
+              <option value="inter">Inter/Segoe UI</option>
+              <option value="poppins">Poppins/SF Pro</option>
+              <option value="osans">Open Sans/Arial</option>
+              <option value="nunito">Nunito/Verdana</option>
+              <option value="robotoslab">Roboto Slab/Cambria</option>
+              <option value="merriweather">Merriweather/Times</option>
+              <option value="sourcesans">Source Sans/Helvetica</option>
+            </select>
+          </div>
+          <div class="footer">
+            <button class="btn" onclick="saveSettings()">Save</button>
+            <button class="btn ghost" onclick="resetSettings()">Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Robust click handling for AI2 WebViewer (some builds restrict inline onclick)
+    document.addEventListener('click', function(e){
+      var v = e.target.closest('[data-view]');
+      if(v){ e.preventDefault(); switchView(v.getAttribute('data-view')); }
+      var act = e.target.closest('[data-act]');
+      if(act){ e.preventDefault(); var k=act.getAttribute('data-act'); if(k==='joke') showRandom('joke'); if(k==='tip') showRandom('tip'); }
+    });
+
+    /* =============================
+       HELPER — AI2 WebViewer bridge
+       ============================= */
+    function emitAI2(message){
+      try{
+        if(window.AppInventor && window.AppInventor.setWebViewString){
+          window.AppInventor.setWebViewString(String(message));
+        }else{
+          console.log('[AI2]', message); // standalone mode
+        }
+      }catch(e){console.log('AI2 emit error', e)}
+    }
+
+    function switchView(name){
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      const el = document.getElementById('view-'+name);
+      if(el) el.classList.add('active');
+      emitAI2('nav:'+name);
+    }
+
+    /* =============================
+       CHAT BOT — jokes & study tips (50 each)
+       ============================= */
+    const jokes=[
+      "Why did the math book look sad? It had too many problems!",
+      "Parallel lines have so much in common. It’s a shame they’ll never meet.",
+      "Why don’t scientists trust atoms? Because they make up everything!",
+      "I told my computer I needed a break, and it said ‘No problem— I’ll go to sleep.’",
+      "Why was 6 afraid of 7? Because 7 8 9!",
+      "What do you call fake spaghetti? An impasta!",
+      "Why did the student eat his homework? The teacher said it was a piece of cake!",
+      "What do you call cheese that isn’t yours? Nacho cheese!",
+      "Why did the scarecrow win an award? He was outstanding in his field!",
+      "Why can’t you trust stairs? They’re always up to something.",
+      "How does a penguin build its house? Igloos it together.",
+      "Why did the computer go to the doctor? It caught a virus!",
+      "I would tell you a construction pun, but I’m still working on it.",
+      "Why are ghosts bad liars? Because they are too transparent.",
+      "Why did the bicycle fall over? It was two-tired.",
+      "Why did the tomato blush? It saw the salad dressing!",
+      "How do you organize a space party? You planet.",
+      "What do you call a sleeping bull? A bulldozer.",
+      "Why don’t programmers like nature? It has too many bugs.",
+      "What do you call a bear with no teeth? A gummy bear.",
+      "Why was the computer cold? It left its Windows open.",
+      "What do you call a fish wearing a bowtie? Sofishticated.",
+      "Why did the cookie go to the hospital? It felt crummy.",
+      "What’s orange and sounds like a parrot? A carrot.",
+      "Why did the golfer bring two pairs of pants? In case he got a hole in one.",
+      "How do you make a tissue dance? Put a little boogie in it.",
+      "Why did the music teacher go to jail? She got caught with too many sharp objects.",
+      "What do you call an alligator in a vest? An investigator.",
+      "What did one wall say to the other? I’ll meet you at the corner.",
+      "Why did the picture go to jail? It was framed.",
+      "What do you call a dinosaur with an extensive vocabulary? A thesaurus.",
+      "Why don’t eggs tell jokes? They’d crack each other up.",
+      "What do you call a pile of cats? A meowtain.",
+      "Why did the student bring a ladder to school? Because they were going to high school.",
+      "Why don’t skeletons fight each other? They don’t have the guts.",
+      "How do you catch a squirrel? Climb a tree and act like a nut.",
+      "What do you call a cow with no legs? Ground beef.",
+      "Why was the broom late? It swept in.",
+      "What do you call a can opener that doesn’t work? A can’t opener.",
+      "Why did the belt get arrested? For holding up a pair of pants.",
+      "Why did the computer show up at work late? It had a hard drive.",
+      "What do you call a boomerang that doesn’t come back? A stick.",
+      "Why can’t a nose be 12 inches long? Then it would be a foot.",
+      "What do you get when you cross a snowman and a vampire? Frostbite.",
+      "Why did the smartphone need glasses? It lost all its contacts.",
+      "What did the ocean say to the beach? Nothing, it just waved.",
+      "What do you call a factory that makes okay products? A satisfactory.",
+      "Why was the math lecture so long? The professor kept going off on a tangent.",
+      "What’s a computer’s favorite snack? Microchips.",
+      "Why did the physics book look nervous? Too much pressure!"
+    ];
+
+    const tips=[
+      "Study in short focused bursts (25–30 min) with 5 min breaks.",
+      "Teach a concept to someone else to test your understanding.",
+      "Summarize each chapter in 5 bullet points.",
+      "Write flashcards for tough terms and review daily.",
+      "Do past papers under timed conditions.",
+      "Turn headings into questions and answer them.",
+      "Space your revision—don’t cram the night before.",
+      "Sleep 7–9 hours; memory forms during sleep.",
+      "Use the Feynman technique: explain simply.",
+      "Study at the same time every day to build habit.",
+      "Remove phone distractions for 30 minutes at a time.",
+      "Set one clear goal per session (e.g., 10 problems).",
+      "Highlight sparingly, then convert highlights to notes.",
+      "Use active recall: close the book and write what you remember.",
+      "Turn big tasks into smaller steps with deadlines.",
+      "Make your own examples to check understanding.",
+      "If stuck 10 minutes, mark and move on.",
+      "Study hardest topics when your energy is highest.",
+      "Mix topics (interleaving) to improve learning.",
+      "Keep a ‘mistake log’ and revisit weekly.",
+      "Draw diagrams—visuals boost memory.",
+      "Record key formulas on a single cheat sheet.",
+      "Practice retrieval with blank paper.",
+      "Use apps only as tools, not distractions.",
+      "Test yourself right after learning and again tomorrow.",
+      "Explain topics aloud as if tutoring.",
+      "Study groups: compare methods, not just answers.",
+      "Eat light, hydrate—avoid sugar crashes.",
+      "Schedule rewards after sessions to stay motivated.",
+      "Start with a 2‑minute ‘just start’ rule to beat procrastination.",
+      "Keep your desk clear; clutter drains focus.",
+      "Rewrite notes into concise one‑pagers.",
+      "Create mnemonics for tricky lists.",
+      "Use margins to note ‘why’ beside each step.",
+      "Color‑code by concept, not by aesthetic.",
+      "Pair a boring task with a favorite drink or playlist.",
+      "Track progress daily to see momentum.",
+      "Ask ‘what would this look like on the exam?’",
+      "Study near natural light to stay alert.",
+      "Prioritize understanding over memorizing first.",
+      "Take a 10‑minute walk to refresh concentration.",
+      "Set phone to Do Not Disturb while studying.",
+      "Use the Cornell note method and review weekly.",
+      "Start assignments early; first drafts are messy.",
+      "Check units and assumptions in every problem.",
+      "Re‑solve missed problems without looking.",
+      "Keep a separate formula book.",
+      "Review the syllabus—study what’s assessed.",
+      "End sessions by planning the next one.",
+      "Believe in progress, not perfection."
+    ];
+
+    function randFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
+    function showRandom(kind){
+      const out=document.getElementById('chatOutput');
+      const msg = kind==='joke'? randFrom(jokes): randFrom(tips);
+      out.textContent = msg;
+      emitAI2('chat:'+kind);
+    }
+
+    /* =============================
+       SLEEP LOG — localStorage
+       ============================= */
+    const SKEY='sleep.entries.v1';
+    function getSleep(){try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch{ return []}}
+    function setSleep(list){localStorage.setItem(SKEY,JSON.stringify(list));renderSleep()}
+    function durationHours(a,b){const ms=(new Date(b)-new Date(a));return ms>0? (ms/36e5):0}
+    function saveSleep(){
+      const bed=document.getElementById('sleepBed').value;
+      const wake=document.getElementById('sleepWake').value;
+      const q=document.getElementById('sleepQuality').value;
+      const notes=document.getElementById('sleepNotes').value.trim();
+      if(!bed||!wake){alert('Please enter bedtime and wake time');return}
+      const h=+durationHours(bed,wake).toFixed(2);
+      const list=getSleep();
+      list.unshift({bed,wake,q:+q,notes,h,ts:Date.now()});
+      setSleep(list.slice(0,100));
+      emitAI2('sleep:saved');
+      document.getElementById('sleepNotes').value='';
+    }
+    function clearSleep(){if(confirm('Delete all sleep entries?')){setSleep([]);emitAI2('sleep:cleared')}}
+    function renderSleep(){
+      const list=getSleep();
+      const box=document.getElementById('sleepList');
+      box.innerHTML='';
+      list.forEach((e,i)=>{
+        const div=document.createElement('div');
+        div.className='item';
+        div.innerHTML = `<b>${new Date(e.bed).toLocaleString()} → ${new Date(e.wake).toLocaleString()}</b><br>
+          Hours: <b>${e.h.toFixed(2)}</b> · Quality: <b>${e.q}</b><br>
+          <span class="muted">${e.notes||''}</span>
+          <div class="footer"><button class="btn small ghost" onclick="delSleep(${i})">Delete</button></div>`;
+        box.appendChild(div);
+      });
+      const last7=list.slice(0,7).reduce((s,x)=>s+x.h,0);
+      document.getElementById('sleepStats').innerHTML = `Total hrs (last 7 entries): <b>${last7.toFixed(1)}</b>`;
+    }
+    function delSleep(idx){const list=getSleep();list.splice(idx,1);setSleep(list)}
+
+    /* =============================
+       HYDRATION — goals only
+       ============================= */
+    const WGOAL='water.goal.v1';
+    const WNOW='water.now.v1:'+(new Date()).toDateString(); // daily key by date
+    function loadWater(){
+      const goal= +(localStorage.getItem(WGOAL)||0);
+      const now= +(localStorage.getItem(WNOW)||0);
+      document.getElementById('waterGoal').value = goal||2000;
+      document.getElementById('waterGoalText').textContent = goal;
+      document.getElementById('waterNow').textContent = now;
+      const pct = goal? Math.min(100, Math.round(now/goal*100)) : 0;
+      document.getElementById('waterBar').style.width = pct+'%';
+    }
+    function setGoal(){
+      const v= +document.getElementById('waterGoal').value || 0;
+      localStorage.setItem(WGOAL, v);
+      loadWater();
+      emitAI2('water:goal:'+v);
+    }
+    function addWater(ml){
+      const now= +(localStorage.getItem(WNOW)||0) + ml;
+      localStorage.setItem(WNOW, now);
+      loadWater();
+      emitAI2('water:add:'+ml);
+    }
+    function resetWater(){localStorage.setItem(WNOW,0);loadWater();emitAI2('water:reset')}
+
+    /* =============================
+       TO‑DO & REMINDERS — Microsoft To Do–style
+       ============================= */
+    const TKEY='todo.list.v1';
+    function getTasks(){try{return JSON.parse(localStorage.getItem(TKEY)||'[]')}catch{return []}}
+    function setTasks(list){localStorage.setItem(TKEY, JSON.stringify(list));renderTasks()}
+
+    function addTask(){
+      const title=document.getElementById('todoTitle').value.trim();
+      const due=document.getElementById('todoDue').value;
+      const every=+document.getElementById('todoEvery').value||0;
+      const notes=document.getElementById('todoNotes').value.trim();
+      const star=document.getElementById('todoStar').checked;
+      if(!title){alert('Enter a task title');return}
+      const id='t'+Date.now();
+      const t={id,title,due,notes,star,done:false,every,createdAt:Date.now(),nextPing: every? Date.now()+every*60000 : 0};
+      const list=getTasks();
+      list.unshift(t);
+      setTasks(list);
+      emitAI2('todo:add:'+id);
+      // clear inputs
+      document.getElementById('todoTitle').value='';
+      document.getElementById('todoDue').value='';
+      document.getElementById('todoEvery').value='';
+      document.getElementById('todoNotes').value='';
+      document.getElementById('todoStar').checked=false;
+    }
+    function toggleDone(id){
+      const list=getTasks();
+      const t=list.find(x=>x.id===id); if(!t) return;
+      t.done=!t.done; if(t.done) t.nextPing=0; // stop reminders if completed
+      setTasks(list); emitAI2('todo:done:'+id);
+    }
+    function toggleStar(id){
+      const list=getTasks();
+      const t=list.find(x=>x.id===id); if(!t) return; t.star=!t.star; setTasks(list); emitAI2('todo:star:'+id);
+    }
+    function delTask(id){
+      const list=getTasks().filter(x=>x.id!==id);
+      setTasks(list); emitAI2('todo:delete:'+id);
+    }
+    function clearDone(){const list=getTasks().filter(x=>!x.done); setTasks(list); emitAI2('todo:clear_done')}
+    function clearAllTasks(){if(confirm('Delete all tasks?')){setTasks([]); emitAI2('todo:clear_all')}}
+
+    function renderTasks(){
+      const list=getTasks();
+      const box=document.getElementById('todoList');
+      box.innerHTML='';
+      // sort: starred first, then by due, then by created
+      list.sort((a,b)=> (b.star-a.star) || (new Date(a.due||0)-new Date(b.due||0)) || (b.createdAt-a.createdAt));
+      list.forEach(t=>{
+        const dueTxt = t.due? new Date(t.due).toLocaleString(): 'No due';
+        const row=document.createElement('div');
+        row.className='item';
+        row.innerHTML = `
+          <div class="row" style="gap:8px;align-items:center">
+            <label style="display:flex;gap:8px;align-items:center;flex:1">
+              <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone('${t.id}')"/>
+              <span class="${t.done?'strike':''}"><b>${escapeHTML(t.title)}</b></span>
+            </label>
+            <button class="btn small ghost" title="Star" onclick="toggleStar('${t.id}')">${t.star?'★':'☆'}</button>
+            <button class="btn small ghost" title="Delete" onclick="delTask('${t.id}')">✕</button>
+          </div>
+          <div class="row" style="margin-top:6px;gap:8px">
+            <span class="pill">Due: ${dueTxt}</span>
+            ${t.every? `<span class="pill">Every ${t.every} min</span>`:''}
+          </div>
+          ${t.notes? `<div class="muted" style="margin-top:6px">${escapeHTML(t.notes)}</div>`:''}
+        `;
+        box.appendChild(row);
+      });
+      document.getElementById('todoSummary').textContent = `${list.length} task${list.length!==1?'s':''}`;
+    }
+
+    // Reminder heartbeat — checks repeating reminders and due times
+    setInterval(()=>{
+      const list=getTasks(); let changed=false; const now=Date.now();
+      list.forEach(t=>{
+        if(t.done) return;
+        // repeating reminders
+        if(t.every && (!t.nextPing || now>=t.nextPing)){
+          t.nextPing = now + t.every*60000; changed=true;
+          emitAI2('todo:reminder:'+t.id);
+          try{ alert('Reminder: '+t.title); }catch{}
+        }
+        // one‑off due reminder (when due passes); emits once
+        if(!t.every && t.due){
+          const dueTs = +new Date(t.due);
+          if(dueTs && now>=dueTs && !t._dueFired){
+            t._dueFired = true; changed=true;
+            emitAI2('todo:due:'+t.id);
+            try{ alert('Task due: '+t.title); }catch{}
+          }
+        }
+      });
+      if(changed) setTasks(list);
+    }, 60000); // check every minute
+
+    function escapeHTML(s){return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
+
+    /* =============================
+       SETTINGS — theme & fonts (10 options)
+       ============================= */
+    const SCONF='settings.v1';
+    function applyTheme(mode){
+      const root=document.getElementById('appRoot');
+      root.classList.remove('theme-dark','theme-purple');
+      if(mode==='dark') root.classList.add('theme-dark');
+      if(mode==='purple') root.classList.add('theme-purple');
+    }
+    function applyFontSize(px){document.documentElement.style.setProperty('--font-size', px+'px')}
+    function applyFont(kind){
+      let f='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif';
+      if(kind==='serif') f='Georgia, Cambria, "Times New Roman", serif';
+      if(kind==='mono') f='ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';
+      if(kind==='inter') f='"Inter", "Segoe UI", Roboto, system-ui, sans-serif';
+      if(kind==='poppins') f='"Poppins", -apple-system, "Segoe UI", Roboto, system-ui, sans-serif';
+      if(kind==='osans') f='"Open Sans", Arial, Helvetica, sans-serif';
+      if(kind==='nunito') f='"Nunito", Verdana, Geneva, sans-serif';
+      if(kind==='robotoslab') f='"Roboto Slab", Cambria, Georgia, serif';
+      if(kind==='merriweather') f='"Merriweather", "Times New Roman", serif';
+      if(kind==='sourcesans') f='"Source Sans 3", "Source Sans Pro", Helvetica, Arial, sans-serif';
+      document.documentElement.style.setProperty('--font', f);
+    }
+    function saveSettings(){
+      const cfg={
+        theme: document.getElementById('themeSel').value,
+        size: document.getElementById('fontSizeSel').value,
+        font: document.getElementById('fontSel').value,
+        user: document.getElementById('userName').textContent
+      };
+      localStorage.setItem(SCONF, JSON.stringify(cfg));
+      applyTheme(cfg.theme);applyFontSize(cfg.size);applyFont(cfg.font);
+      alert('Settings saved');
+      emitAI2('settings:saved');
+    }
+    function resetSettings(){localStorage.removeItem(SCONF);document.getElementById('themeSel').value='light';document.getElementById('fontSizeSel').value='16';document.getElementById('fontSel').value='system';applyTheme('light');applyFontSize(16);applyFont('system');emitAI2('settings:reset')}
+    function loadSettings(){
+      const s=localStorage.getItem(SCONF); if(!s){applyTheme('light');return}
+      try{const cfg=JSON.parse(s);document.getElementById('themeSel').value=cfg.theme||'light';document.getElementById('fontSizeSel').value=cfg.size||'16';document.getElementById('fontSel').value=cfg.font||'system';applyTheme(cfg.theme||'light');applyFontSize(cfg.size||16);applyFont(cfg.font||'system'); if(cfg.user) document.getElementById('userName').textContent=cfg.user;}catch{}
+    }
+
+    /* =============================
+       INIT
+       ============================= */
+    function init(){
+      loadSettings();
+      renderSleep();
+      loadWater();
+      renderTasks();
+    }
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
