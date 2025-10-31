@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MIT AI2 Mobile Dashboard – Pro</title>
+  <title>MIT AI2 Mobile Dashboard – Pro (Fixed)</title>
   <!-- 320 x 650 fixed viewport for AI2 WebViewer -->
   <style>
     :root{
@@ -21,7 +21,6 @@
       --font-size:16px;            /* base */
     }
 
-    /* Themes (Settings can toggle these by writing style vars) */
     .theme-dark{
       --bg:#0b1220;
       --card:#121a2a;
@@ -73,12 +72,13 @@
 
     .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.08);color:var(--text)}
     .muted{color:var(--muted)}
-    .btn{display:inline-block;border:none;border-radius:10px;padding:10px 12px;background:var(--header-grad1);color:#fff;font-weight:700}
+    .btn{display:inline-block;border:none;border-radius:10px;padding:10px 12px;background:var(--header-grad1);color:#fff;font-weight:700;cursor:pointer}
     .btn.alt{background:var(--header-grad2)}
     .btn.ghost{background:transparent;border:1px solid currentColor;color:var(--link)}
     .btn.small{padding:6px 10px;border-radius:8px;font-size:12px}
     .row{display:flex;justify-content:space-between;align-items:center}
     .row-gap{display:flex;gap:8px;flex-wrap:wrap}
+    input,select,textarea,button{font-family:inherit;font-size:inherit}
     input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #e5e7eb;background:transparent;color:var(--text)}
     textarea{min-height:70px}
     .list{margin-top:8px;max-height:210px;overflow:auto}
@@ -95,7 +95,6 @@
 </head>
 <body>
   <div class="phone" id="appRoot">
-    <!-- HEADER (profile pic & notifications removed per request) -->
     <div class="header">
       <div class="wrap">
         <div class="title">Dashboard</div>
@@ -103,7 +102,6 @@
       </div>
     </div>
 
-    <!-- CONTENT -->
     <div class="content">
       <div class="section-title">Quick Actions</div>
       <div class="grid">
@@ -121,7 +119,7 @@
         </button>
         <button class="card-btn" data-view="todo">
           <div class="icon ic3">📝</div>
-          <div>To‑Do & Reminders</div>
+          <div>To-Do & Reminders</div>
         </button>
         <button class="card-btn" data-view="calendar">
           <div class="icon ic4">📆</div>
@@ -139,8 +137,8 @@
           <strong>Chat Bot</strong>
           <p class="muted" style="margin:6px 0 10px">Tap a button to get a random joke or study tip.</p>
           <div class="row-gap">
-            <button class="btn small" data-act="joke">Tell me a Joke</button>
-            <button class="btn small alt" data-act="tip">Give a Study Tip</button>
+            <button class="btn small" data-act="chat-joke">Tell me a Joke</button>
+            <button class="btn small alt" data-act="chat-tip">Give a Study Tip</button>
           </div>
           <div id="chatOutput" class="item" style="margin-top:10px">👋 Hi! I'm ready.</div>
         </div>
@@ -174,8 +172,8 @@
             </div>
           </div>
           <div class="footer">
-            <button class="btn" onclick="saveSleep()">Save Entry</button>
-            <button class="btn ghost" onclick="clearSleep()">Clear All</button>
+            <button class="btn" data-act="sleep-save">Save Entry</button>
+            <button class="btn ghost" data-act="sleep-clear">Clear All</button>
           </div>
           <div class="list" id="sleepList"></div>
           <div class="item" id="sleepStats" style="background:#f1f5f9">Total hrs (last 7 entries): <b>0.0</b></div>
@@ -193,28 +191,28 @@
               <input id="waterGoal" type="number" min="0" step="50" />
             </div>
             <div style="align-self:flex-end">
-              <button class="btn small" onclick="setGoal()">Set Goal</button>
+              <button class="btn small" data-act="water-goal">Set Goal</button>
             </div>
           </div>
 
           <div class="progress" style="margin:10px 0"><div class="bar" id="waterBar"></div></div>
           <div class="row" style="color:var(--text);margin-bottom:8px">
             <div>Today: <b id="waterNow">0</b> / <span id="waterGoalText">0</span> ml</div>
-            <a class="link" href="#" onclick="resetWater();return false;">reset</a>
+            <a class="link" href="#" data-act="water-reset">reset</a>
           </div>
 
           <div class="row-gap">
-            <button class="btn small" onclick="addWater(150)">+150 ml</button>
-            <button class="btn small" onclick="addWater(250)">+250 ml</button>
-            <button class="btn small" onclick="addWater(500)">+500 ml</button>
+            <button class="btn small" data-act="water-add" data-arg="150">+150 ml</button>
+            <button class="btn small" data-act="water-add" data-arg="250">+250 ml</button>
+            <button class="btn small" data-act="water-add" data-arg="500">+500 ml</button>
           </div>
         </div>
       </div>
 
-      <!-- TO‑DO & REMINDERS VIEW -->
+      <!-- TO-DO & REMINDERS VIEW -->
       <div id="view-todo" class="view" style="margin-top:12px">
         <div class="card">
-          <strong>To‑Do & Reminders</strong>
+          <strong>To-Do & Reminders</strong>
           <p class="muted" style="margin:6px 0 10px">Create tasks with optional due date, notes, star (priority), and repeating reminders.</p>
 
           <div class="row-gap">
@@ -223,15 +221,15 @@
             <input id="todoEvery" type="number" min="5" step="5" placeholder="Remind every (min)" />
             <input id="todoNotes" placeholder="Notes (optional)" />
             <label class="muted" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="todoStar"/> Star</label>
-            <button class="btn" onclick="addTask()">Add Task</button>
+            <button class="btn" data-act="todo-add">Add Task</button>
           </div>
 
           <div class="list" id="todoList"></div>
           <div class="row" style="margin-top:6px">
             <span class="muted" id="todoSummary">0 tasks</span>
             <div class="row-gap">
-              <button class="btn small ghost" onclick="clearDone()">Clear Completed</button>
-              <button class="btn small ghost" onclick="clearAllTasks()">Clear All</button>
+              <button class="btn small ghost" data-act="todo-clear-done">Clear Completed</button>
+              <button class="btn small ghost" data-act="todo-clear-all">Clear All</button>
             </div>
           </div>
         </div>
@@ -241,7 +239,7 @@
       <div id="view-calendar" class="view" style="margin-top:12px">
         <div class="card"><strong>Calendar</strong>
           <p class="muted">Open your dedicated AI2 Calendar screen.
-            <a class="link" href="#" onclick="emitAI2('calendar:open');return false;">Open in AI2</a>
+            <a class="link" href="#" data-act="calendar-open">Open in AI2</a>
           </p></div>
       </div>
 
@@ -252,7 +250,7 @@
           <p class="muted" style="margin:6px 0 10px">Theme, font size and font family are saved locally.</p>
           <div>
             <label class="muted">Theme</label>
-            <select id="themeSel" onchange="applyTheme(this.value)">
+            <select id="themeSel">
               <option value="light">Light</option>
               <option value="dark">Dark</option>
               <option value="purple">Purple</option>
@@ -260,7 +258,7 @@
           </div>
           <div style="margin-top:8px">
             <label class="muted">Font Size</label>
-            <select id="fontSizeSel" onchange="applyFontSize(this.value)">
+            <select id="fontSizeSel">
               <option value="14">Small</option>
               <option value="16" selected>Medium</option>
               <option value="18">Large</option>
@@ -269,7 +267,7 @@
           </div>
           <div style="margin-top:8px">
             <label class="muted">Font Style (10 options)</label>
-            <select id="fontSel" onchange="applyFont(this.value)">
+            <select id="fontSel">
               <option value="system">System Default</option>
               <option value="serif">Serif (Georgia)</option>
               <option value="mono">Monospace</option>
@@ -283,8 +281,8 @@
             </select>
           </div>
           <div class="footer">
-            <button class="btn" onclick="saveSettings()">Save</button>
-            <button class="btn ghost" onclick="resetSettings()">Reset</button>
+            <button class="btn" data-act="settings-save">Save</button>
+            <button class="btn ghost" data-act="settings-reset">Reset</button>
           </div>
         </div>
       </div>
@@ -292,12 +290,51 @@
   </div>
 
   <script>
-    // Robust click handling for AI2 WebViewer (some builds restrict inline onclick)
+    // Global delegation for WebViewer-safe interactions (no inline handlers)
     document.addEventListener('click', function(e){
-      var v = e.target.closest('[data-view]');
-      if(v){ e.preventDefault(); switchView(v.getAttribute('data-view')); }
-      var act = e.target.closest('[data-act]');
-      if(act){ e.preventDefault(); var k=act.getAttribute('data-act'); if(k==='joke') showRandom('joke'); if(k==='tip') showRandom('tip'); }
+      var el;
+      // Navigation buttons
+      el = e.target.closest('[data-view]');
+      if(el){ e.preventDefault(); switchView(el.getAttribute('data-view')); return; }
+
+      // Actions
+      el = e.target.closest('[data-act]');
+      if(!el) return;
+      e.preventDefault();
+      var act = el.getAttribute('data-act');
+      var arg = el.getAttribute('data-arg');
+
+      switch(act){
+        case 'chat-joke': showRandom('joke'); break;
+        case 'chat-tip': showRandom('tip'); break;
+
+        case 'sleep-save': saveSleep(); break;
+        case 'sleep-clear': clearSleep(); break;
+        case 'sleep-del': delSleep(parseInt(el.getAttribute('data-idx'))||0); break;
+
+        case 'water-goal': setGoal(); break;
+        case 'water-add': addWater(parseInt(arg)||0); break;
+        case 'water-reset': resetWater(); break;
+
+        case 'todo-add': addTask(); break;
+        case 'todo-del': delTask(el.getAttribute('data-id')); break;
+        case 'todo-star': toggleStar(el.getAttribute('data-id')); break;
+
+        case 'todo-clear-done': clearDone(); break;
+        case 'todo-clear-all': clearAllTasks(); break;
+
+        case 'calendar-open': emitAI2('calendar:open'); break;
+
+        case 'settings-save': saveSettings(); break;
+        case 'settings-reset': resetSettings(); break;
+      }
+    });
+
+    // Checkbox changes (done/undone)
+    document.addEventListener('change', function(e){
+      if(e.target && e.target.hasAttribute('data-act') && e.target.getAttribute('data-act')==='todo-done'){
+        toggleDone(e.target.getAttribute('data-id'));
+      }
     });
 
     /* =============================
@@ -308,14 +345,15 @@
         if(window.AppInventor && window.AppInventor.setWebViewString){
           window.AppInventor.setWebViewString(String(message));
         }else{
-          console.log('[AI2]', message); // standalone mode
+          console.log('[AI2]', message);
         }
       }catch(e){console.log('AI2 emit error', e)}
     }
 
     function switchView(name){
-      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-      const el = document.getElementById('view-'+name);
+      var views=document.querySelectorAll('.view');
+      for(var i=0;i<views.length;i++){ views[i].classList.remove('active'); }
+      var el = document.getElementById('view-'+name);
       if(el) el.classList.add('active');
       emitAI2('nav:'+name);
     }
@@ -323,7 +361,7 @@
     /* =============================
        CHAT BOT — jokes & study tips (50 each)
        ============================= */
-    const jokes=[
+    var jokes=[
       "Why did the math book look sad? It had too many problems!",
       "Parallel lines have so much in common. It’s a shame they’ll never meet.",
       "Why don’t scientists trust atoms? Because they make up everything!",
@@ -376,7 +414,7 @@
       "Why did the physics book look nervous? Too much pressure!"
     ];
 
-    const tips=[
+    var tips=[
       "Study in short focused bursts (25–30 min) with 5 min breaks.",
       "Teach a concept to someone else to test your understanding.",
       "Summarize each chapter in 5 bullet points.",
@@ -406,23 +444,23 @@
       "Study groups: compare methods, not just answers.",
       "Eat light, hydrate—avoid sugar crashes.",
       "Schedule rewards after sessions to stay motivated.",
-      "Start with a 2‑minute ‘just start’ rule to beat procrastination.",
+      "Start with a 2-minute ‘just start’ rule to beat procrastination.",
       "Keep your desk clear; clutter drains focus.",
-      "Rewrite notes into concise one‑pagers.",
+      "Rewrite notes into concise one-pagers.",
       "Create mnemonics for tricky lists.",
       "Use margins to note ‘why’ beside each step.",
-      "Color‑code by concept, not by aesthetic.",
+      "Color-code by concept, not by aesthetic.",
       "Pair a boring task with a favorite drink or playlist.",
       "Track progress daily to see momentum.",
       "Ask ‘what would this look like on the exam?’",
       "Study near natural light to stay alert.",
       "Prioritize understanding over memorizing first.",
-      "Take a 10‑minute walk to refresh concentration.",
+      "Take a 10-minute walk to refresh concentration.",
       "Set phone to Do Not Disturb while studying.",
       "Use the Cornell note method and review weekly.",
       "Start assignments early; first drafts are messy.",
       "Check units and assumptions in every problem.",
-      "Re‑solve missed problems without looking.",
+      "Re-solve missed problems without looking.",
       "Keep a separate formula book.",
       "Review the syllabus—study what’s assessed.",
       "End sessions by planning the next one.",
@@ -431,8 +469,8 @@
 
     function randFrom(arr){return arr[Math.floor(Math.random()*arr.length)]}
     function showRandom(kind){
-      const out=document.getElementById('chatOutput');
-      const msg = kind==='joke'? randFrom(jokes): randFrom(tips);
+      var out=document.getElementById('chatOutput');
+      var msg = kind==='joke'? randFrom(jokes): randFrom(tips);
       out.textContent = msg;
       emitAI2('chat:'+kind);
     }
@@ -440,91 +478,94 @@
     /* =============================
        SLEEP LOG — localStorage
        ============================= */
-    const SKEY='sleep.entries.v1';
-    function getSleep(){try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch{ return []}}
+    var SKEY='sleep.entries.v1';
+    function getSleep(){try{return JSON.parse(localStorage.getItem(SKEY)||'[]')}catch(e){ return []}}
     function setSleep(list){localStorage.setItem(SKEY,JSON.stringify(list));renderSleep()}
-    function durationHours(a,b){const ms=(new Date(b)-new Date(a));return ms>0? (ms/36e5):0}
+    function durationHours(a,b){var ms=(new Date(b)-new Date(a));return ms>0? (ms/36e5):0}
     function saveSleep(){
-      const bed=document.getElementById('sleepBed').value;
-      const wake=document.getElementById('sleepWake').value;
-      const q=document.getElementById('sleepQuality').value;
-      const notes=document.getElementById('sleepNotes').value.trim();
+      var bed=document.getElementById('sleepBed').value;
+      var wake=document.getElementById('sleepWake').value;
+      var q=document.getElementById('sleepQuality').value;
+      var notes=document.getElementById('sleepNotes').value.trim();
       if(!bed||!wake){alert('Please enter bedtime and wake time');return}
-      const h=+durationHours(bed,wake).toFixed(2);
-      const list=getSleep();
-      list.unshift({bed,wake,q:+q,notes,h,ts:Date.now()});
+      var h=+durationHours(bed,wake).toFixed(2);
+      var list=getSleep();
+      list.unshift({bed:wake?bed:null,wake:wake,q:+q,notes:notes,h:h,ts:Date.now()});
       setSleep(list.slice(0,100));
       emitAI2('sleep:saved');
       document.getElementById('sleepNotes').value='';
     }
     function clearSleep(){if(confirm('Delete all sleep entries?')){setSleep([]);emitAI2('sleep:cleared')}}
     function renderSleep(){
-      const list=getSleep();
-      const box=document.getElementById('sleepList');
+      var list=getSleep();
+      var box=document.getElementById('sleepList');
       box.innerHTML='';
-      list.forEach((e,i)=>{
-        const div=document.createElement('div');
+      for(var i=0;i<list.length;i++){
+        var e=list[i];
+        var div=document.createElement('div');
         div.className='item';
-        div.innerHTML = `<b>${new Date(e.bed).toLocaleString()} → ${new Date(e.wake).toLocaleString()}</b><br>
-          Hours: <b>${e.h.toFixed(2)}</b> · Quality: <b>${e.q}</b><br>
-          <span class="muted">${e.notes||''}</span>
-          <div class="footer"><button class="btn small ghost" onclick="delSleep(${i})">Delete</button></div>`;
+        var bed = e.bed? new Date(e.bed).toLocaleString(): '';
+        var wake = e.wake? new Date(e.wake).toLocaleString(): '';
+        div.innerHTML = '<b>'+bed+' → '+wake+'</b><br>'+
+          'Hours: <b>'+e.h.toFixed(2)+'</b> · Quality: <b>'+e.q+'</b><br>'+
+          '<span class="muted">'+(e.notes||'')+'</span>'+
+          '<div class="footer"><button class="btn small ghost" data-act="sleep-del" data-idx="'+i+'">Delete</button></div>';
         box.appendChild(div);
-      });
-      const last7=list.slice(0,7).reduce((s,x)=>s+x.h,0);
-      document.getElementById('sleepStats').innerHTML = `Total hrs (last 7 entries): <b>${last7.toFixed(1)}</b>`;
+      }
+      var last7=0; for(var j=0;j<Math.min(7,list.length);j++){ last7+=list[j].h||0; }
+      document.getElementById('sleepStats').innerHTML = 'Total hrs (last 7 entries): <b>'+last7.toFixed(1)+'</b>';
     }
-    function delSleep(idx){const list=getSleep();list.splice(idx,1);setSleep(list)}
+    function delSleep(idx){var list=getSleep();list.splice(idx,1);setSleep(list)}
 
     /* =============================
        HYDRATION — goals only
        ============================= */
-    const WGOAL='water.goal.v1';
-    const WNOW='water.now.v1:'+(new Date()).toDateString(); // daily key by date
+    var WGOAL='water.goal.v1';
+    function dailyKey(){return 'water.now.v1:'+ (new Date()).toDateString();}
     function loadWater(){
-      const goal= +(localStorage.getItem(WGOAL)||0);
-      const now= +(localStorage.getItem(WNOW)||0);
+      var goal= +(localStorage.getItem(WGOAL)||0);
+      var now= +(localStorage.getItem(dailyKey())||0);
       document.getElementById('waterGoal').value = goal||2000;
       document.getElementById('waterGoalText').textContent = goal;
       document.getElementById('waterNow').textContent = now;
-      const pct = goal? Math.min(100, Math.round(now/goal*100)) : 0;
+      var pct = goal? Math.min(100, Math.round(now/goal*100)) : 0;
       document.getElementById('waterBar').style.width = pct+'%';
     }
     function setGoal(){
-      const v= +document.getElementById('waterGoal').value || 0;
+      var v= +document.getElementById('waterGoal').value || 0;
       localStorage.setItem(WGOAL, v);
       loadWater();
       emitAI2('water:goal:'+v);
     }
     function addWater(ml){
-      const now= +(localStorage.getItem(WNOW)||0) + ml;
-      localStorage.setItem(WNOW, now);
+      var key=dailyKey();
+      var now= +(localStorage.getItem(key)||0) + ml;
+      localStorage.setItem(key, now);
       loadWater();
       emitAI2('water:add:'+ml);
     }
-    function resetWater(){localStorage.setItem(WNOW,0);loadWater();emitAI2('water:reset')}
+    function resetWater(){localStorage.setItem(dailyKey(),0);loadWater();emitAI2('water:reset')}
 
     /* =============================
-       TO‑DO & REMINDERS — Microsoft To Do–style
+       TO-DO & REMINDERS
        ============================= */
-    const TKEY='todo.list.v1';
-    function getTasks(){try{return JSON.parse(localStorage.getItem(TKEY)||'[]')}catch{return []}}
+    var TKEY='todo.list.v1';
+    function getTasks(){try{return JSON.parse(localStorage.getItem(TKEY)||'[]')}catch(e){return []}}
     function setTasks(list){localStorage.setItem(TKEY, JSON.stringify(list));renderTasks()}
 
     function addTask(){
-      const title=document.getElementById('todoTitle').value.trim();
-      const due=document.getElementById('todoDue').value;
-      const every=+document.getElementById('todoEvery').value||0;
-      const notes=document.getElementById('todoNotes').value.trim();
-      const star=document.getElementById('todoStar').checked;
+      var title=document.getElementById('todoTitle').value.trim();
+      var due=document.getElementById('todoDue').value;
+      var every=+document.getElementById('todoEvery').value||0;
+      var notes=document.getElementById('todoNotes').value.trim();
+      var star=document.getElementById('todoStar').checked;
       if(!title){alert('Enter a task title');return}
-      const id='t'+Date.now();
-      const t={id,title,due,notes,star,done:false,every,createdAt:Date.now(),nextPing: every? Date.now()+every*60000 : 0};
-      const list=getTasks();
+      var id='t'+Date.now();
+      var t={id:id,title:title,due:due,notes:notes,star:star,done:false,every:every,createdAt:Date.now(),nextPing: every? Date.now()+every*60000 : 0};
+      var list=getTasks();
       list.unshift(t);
       setTasks(list);
       emitAI2('todo:add:'+id);
-      // clear inputs
       document.getElementById('todoTitle').value='';
       document.getElementById('todoDue').value='';
       document.getElementById('todoEvery').value='';
@@ -532,91 +573,95 @@
       document.getElementById('todoStar').checked=false;
     }
     function toggleDone(id){
-      const list=getTasks();
-      const t=list.find(x=>x.id===id); if(!t) return;
-      t.done=!t.done; if(t.done) t.nextPing=0; // stop reminders if completed
+      var list=getTasks();
+      var t=null; for(var i=0;i<list.length;i++){ if(list[i].id===id){ t=list[i]; break; } }
+      if(!t) return;
+      t.done=!t.done; if(t.done) t.nextPing=0;
       setTasks(list); emitAI2('todo:done:'+id);
     }
     function toggleStar(id){
-      const list=getTasks();
-      const t=list.find(x=>x.id===id); if(!t) return; t.star=!t.star; setTasks(list); emitAI2('todo:star:'+id);
+      var list=getTasks();
+      var t=null; for(var i=0;i<list.length;i++){ if(list[i].id===id){ t=list[i]; break; } }
+      if(!t) return;
+      t.star=!t.star; setTasks(list); emitAI2('todo:star:'+id);
     }
     function delTask(id){
-      const list=getTasks().filter(x=>x.id!==id);
+      var list=getTasks().filter(function(x){return x.id!==id;});
       setTasks(list); emitAI2('todo:delete:'+id);
     }
-    function clearDone(){const list=getTasks().filter(x=>!x.done); setTasks(list); emitAI2('todo:clear_done')}
+    function clearDone(){var list=getTasks().filter(function(x){return !x.done}); setTasks(list); emitAI2('todo:clear_done')}
     function clearAllTasks(){if(confirm('Delete all tasks?')){setTasks([]); emitAI2('todo:clear_all')}}
 
     function renderTasks(){
-      const list=getTasks();
-      const box=document.getElementById('todoList');
+      var list=getTasks();
+      var box=document.getElementById('todoList');
       box.innerHTML='';
-      // sort: starred first, then by due, then by created
-      list.sort((a,b)=> (b.star-a.star) || (new Date(a.due||0)-new Date(b.due||0)) || (b.createdAt-a.createdAt));
-      list.forEach(t=>{
-        const dueTxt = t.due? new Date(t.due).toLocaleString(): 'No due';
-        const row=document.createElement('div');
-        row.className='item';
-        row.innerHTML = `
-          <div class="row" style="gap:8px;align-items:center">
-            <label style="display:flex;gap:8px;align-items:center;flex:1">
-              <input type="checkbox" ${t.done?'checked':''} onchange="toggleDone('${t.id}')"/>
-              <span class="${t.done?'strike':''}"><b>${escapeHTML(t.title)}</b></span>
-            </label>
-            <button class="btn small ghost" title="Star" onclick="toggleStar('${t.id}')">${t.star?'★':'☆'}</button>
-            <button class="btn small ghost" title="Delete" onclick="delTask('${t.id}')">✕</button>
-          </div>
-          <div class="row" style="margin-top:6px;gap:8px">
-            <span class="pill">Due: ${dueTxt}</span>
-            ${t.every? `<span class="pill">Every ${t.every} min</span>`:''}
-          </div>
-          ${t.notes? `<div class="muted" style="margin-top:6px">${escapeHTML(t.notes)}</div>`:''}
-        `;
-        box.appendChild(row);
+      list.sort(function(a,b){
+        return (b.star-a.star) || ((new Date(a.due||0))-(new Date(b.due||0))) || (b.createdAt-a.createdAt);
       });
-      document.getElementById('todoSummary').textContent = `${list.length} task${list.length!==1?'s':''}`;
+      for(var i=0;i<list.length;i++){
+        var t=list[i];
+        var dueTxt = t.due? new Date(t.due).toLocaleString(): 'No due';
+        var row=document.createElement('div');
+        row.className='item';
+        row.innerHTML =
+          '<div class="row" style="gap:8px;align-items:center">'+
+            '<label style="display:flex;gap:8px;align-items:center;flex:1">'+
+              '<input type="checkbox" '+(t.done?'checked':'')+' data-act="todo-done" data-id="'+t.id+'"/>'+
+              '<span class="'+(t.done?'strike':'')+'"><b>'+escapeHTML(t.title)+'</b></span>'+
+            '</label>'+
+            '<button class="btn small ghost" title="Star" data-act="todo-star" data-id="'+t.id+'">'+(t.star?'★':'☆')+'</button>'+
+            '<button class="btn small ghost" title="Delete" data-act="todo-del" data-id="'+t.id+'">✕</button>'+
+          '</div>'+
+          '<div class="row" style="margin-top:6px;gap:8px">'+
+            '<span class="pill">Due: '+dueTxt+'</span>'+
+            (t.every? '<span class="pill">Every '+t.every+' min</span>':'')+
+          '</div>'+
+          (t.notes? '<div class="muted" style="margin-top:6px">'+escapeHTML(t.notes)+'</div>':'')
+        ;
+        box.appendChild(row);
+      }
+      document.getElementById('todoSummary').textContent = list.length+' task'+(list.length!==1?'s':'');
     }
 
     // Reminder heartbeat — checks repeating reminders and due times
-    setInterval(()=>{
-      const list=getTasks(); let changed=false; const now=Date.now();
-      list.forEach(t=>{
-        if(t.done) return;
-        // repeating reminders
+    setInterval(function(){
+      var list=getTasks(); var changed=false; var now=Date.now();
+      for(var i=0;i<list.length;i++){
+        var t=list[i];
+        if(t.done) continue;
         if(t.every && (!t.nextPing || now>=t.nextPing)){
           t.nextPing = now + t.every*60000; changed=true;
           emitAI2('todo:reminder:'+t.id);
-          try{ alert('Reminder: '+t.title); }catch{}
+          try{ alert('Reminder: '+t.title); }catch(e){}
         }
-        // one‑off due reminder (when due passes); emits once
         if(!t.every && t.due){
-          const dueTs = +new Date(t.due);
+          var dueTs = +new Date(t.due);
           if(dueTs && now>=dueTs && !t._dueFired){
             t._dueFired = true; changed=true;
             emitAI2('todo:due:'+t.id);
-            try{ alert('Task due: '+t.title); }catch{}
+            try{ alert('Task due: '+t.title); }catch(e){}
           }
         }
-      });
+      }
       if(changed) setTasks(list);
-    }, 60000); // check every minute
+    }, 60000);
 
-    function escapeHTML(s){return s.replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]))}
+    function escapeHTML(s){return String(s).replace(/[&<>"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]})}
 
     /* =============================
        SETTINGS — theme & fonts (10 options)
        ============================= */
-    const SCONF='settings.v1';
+    var SCONF='settings.v1';
     function applyTheme(mode){
-      const root=document.getElementById('appRoot');
+      var root=document.getElementById('appRoot');
       root.classList.remove('theme-dark','theme-purple');
       if(mode==='dark') root.classList.add('theme-dark');
       if(mode==='purple') root.classList.add('theme-purple');
     }
     function applyFontSize(px){document.documentElement.style.setProperty('--font-size', px+'px')}
     function applyFont(kind){
-      let f='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif';
+      var f='-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif';
       if(kind==='serif') f='Georgia, Cambria, "Times New Roman", serif';
       if(kind==='mono') f='ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';
       if(kind==='inter') f='"Inter", "Segoe UI", Roboto, system-ui, sans-serif';
@@ -629,7 +674,7 @@
       document.documentElement.style.setProperty('--font', f);
     }
     function saveSettings(){
-      const cfg={
+      var cfg={
         theme: document.getElementById('themeSel').value,
         size: document.getElementById('fontSizeSel').value,
         font: document.getElementById('fontSel').value,
@@ -642,8 +687,8 @@
     }
     function resetSettings(){localStorage.removeItem(SCONF);document.getElementById('themeSel').value='light';document.getElementById('fontSizeSel').value='16';document.getElementById('fontSel').value='system';applyTheme('light');applyFontSize(16);applyFont('system');emitAI2('settings:reset')}
     function loadSettings(){
-      const s=localStorage.getItem(SCONF); if(!s){applyTheme('light');return}
-      try{const cfg=JSON.parse(s);document.getElementById('themeSel').value=cfg.theme||'light';document.getElementById('fontSizeSel').value=cfg.size||'16';document.getElementById('fontSel').value=cfg.font||'system';applyTheme(cfg.theme||'light');applyFontSize(cfg.size||16);applyFont(cfg.font||'system'); if(cfg.user) document.getElementById('userName').textContent=cfg.user;}catch{}
+      var s=localStorage.getItem(SCONF); if(!s){applyTheme('light');return}
+      try{var cfg=JSON.parse(s);document.getElementById('themeSel').value=cfg.theme||'light';document.getElementById('fontSizeSel').value=cfg.size||'16';document.getElementById('fontSel').value=cfg.font||'system';applyTheme(cfg.theme||'light');applyFontSize(cfg.size||16);applyFont(cfg.font||'system'); if(cfg.user) document.getElementById('userName').textContent=cfg.user;}catch(e){}
     }
 
     /* =============================
